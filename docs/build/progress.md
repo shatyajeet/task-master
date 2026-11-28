@@ -30,4 +30,20 @@ Template:
 
 ## Entries
 
-None yet.
+### S01 · Machine setup (2026-11-29)
+
+- **Built:** The laptop now has Postgres 19.0 on `localhost` only, pgvector 0.8.7, Python 3.14.10, LibreOffice 26.8.3.1, Node v26.13.1, the `taskmaster` role, and the three folders under `C:\taskmaster-data`. The repository is outside OneDrive. No repository code changed.
+- **Key files:** [S01-machine-setup.md](steps/S01-machine-setup.md)
+- **Commands:** None. Run `py -3.14` for Python until S02 adds `scripts/py.mjs`.
+- **Deviations:**
+  - Python 3.14 came from the Python install manager (`py install`), not `winget`, because it was already in place. `py -3.14 --version` reports 3.14.10.
+  - `pg_hba.conf` has only the two loopback `host` lines, so local-socket and replication lines were removed (the step says to keep only these two). The originals are saved beside the files as `*.bak-s01`.
+  - `soffice --version` prints nothing in a console on Windows, so 26.8.3.1 was read from the exe's file version.
+  - The user ran the `psql` Verify command with the `postgres` password, which the agent does not have. It printed `19.0`, `localhost` and `0.8.7`. The user created the `taskmaster` role, and the agent did not check its login.
+- **Plan files changed:** None.
+- **README:** No change needed: S02 is not done yet, so the status block stays as is, and the setup text still matches the machine.
+- **Architecture impact:** None; matches § Installing the services.
+- **Notes for later steps:**
+  - Postgres data folder is `C:\Program Files\PostgreSQL\19\data`.
+  - pgvector was built in `%TEMP%\pgvector`, which can be deleted.
+  - `PG_ADMIN_URL` and the `taskmaster` password go in `.env` (S02 onward), never in a commit.

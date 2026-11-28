@@ -1,9 +1,9 @@
 ---
 step: S01
 title: "Machine setup"
-status: not-started
-started:
-completed:
+status: done
+started: 2026-11-29
+completed: 2026-11-29
 ---
 
 # S01 · Machine setup
