@@ -94,7 +94,7 @@ Template:
   - `app/serve.py` has a `run_in_loop()` helper, which `main()` uses. The loop test runs a coroutine through it, because the pytest loop itself is not the server's.
   - The lockfiles were compiled without `--allow-unsafe`, so `pip` and `setuptools` are not pinned. With it, `pip.exe` cannot replace itself on Windows and the Verify command fails.
   - The middleware rejects duplicate `Host` or `X-Internal-Token` headers and closes websocket connections. `yarn install` ran once to register the two new workspaces in `yarn.lock`.
-  - `pyproject.toml` also sets `asyncio_default_fixture_loop_scope = "function"` to silence a pytest-asyncio warning. The tests add `DATABASE_URL` (agent) and `INTERNAL_TOKEN` to the process environment.
+  - `pyproject.toml` also sets `asyncio_default_fixture_loop_scope = "function"` to silence a pytest-asyncio warning. After the step, at the user's request, [pyrightconfig.json](../../pyrightconfig.json) was added so the editor resolves both venvs at once (one `executionEnvironments` entry per service, pointing at its `.venv\Lib\site-packages`); it was only checked as valid JSON with existing paths, not run through pyright. The tests add `DATABASE_URL` (agent) and `INTERNAL_TOKEN` to the process environment.
 - **Plan files changed:** None.
 - **README:** Updated the status block (now S01 to S04), § Repository layout, § Setup (step 4 now installs the `-dev` files, and its planned mark is gone), § Everyday commands (`yarn test`) and § Testing and evals.
 - **Architecture impact:** None; matches § Local-only access (Host check, internal token, `127.0.0.1` binding) and § Components (ports 8000 and 8001).

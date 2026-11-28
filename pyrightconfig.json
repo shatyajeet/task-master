@@ -1,0 +1,15 @@
+{
+  "pythonVersion": "3.14",
+  "pythonPlatform": "Windows",
+  "exclude": ["**/node_modules", "**/__pycache__", "**/.venv"],
+  "executionEnvironments": [
+    {
+      "root": "services/agent",
+      "extraPaths": ["services/agent", "services/agent/.venv/Lib/site-packages"]
+    },
+    {
+      "root": "services/ocr",
+      "extraPaths": ["services/ocr", "services/ocr/.venv/Lib/site-packages"]
+    }
+  ]
+}

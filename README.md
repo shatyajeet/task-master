@@ -107,6 +107,7 @@ CLAUDE.md                      imports AGENTS.md for Claude Code
 package.json, yarn.lock        the Yarn workspace root and its commands
 .env.example                   every setting, with placeholder values
 tsconfig.base.json             shared TypeScript settings
+pyrightconfig.json             lets the editor resolve each service's venv
 scripts/doctor.mjs             yarn doctor: checks the installation
 scripts/py.mjs                 runs a service's Python from the repository root
 scripts/check-architecture.mjs yarn check:arch, with its tests beside it
