@@ -2,7 +2,7 @@
 
 TaskMaster is a single-user AI coworker that runs entirely on one Windows laptop. You create a workspace and add documents in most office formats. You then chat with an agent that searches them, follows the relationships between the people, projects and organizations they mention, drafts artifacts, and asks before it writes any file.
 
-> **Status: being built. Steps S01 to S05 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor`, `yarn check:arch`, the database scripts and the bare API, agent and OCR services (a health check and the security checks) work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
+> **Status: being built. Steps S01 to S06 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor`, `yarn check:arch`, the database scripts, `yarn dev`, and the bare web, API, agent and OCR services (a health check and the security checks, and in the web app a placeholder home page) work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
 >
 > ```text
 > git grep -n "^status:" -- docs/build/steps
@@ -112,7 +112,10 @@ scripts/doctor.mjs             yarn doctor: checks the installation
 scripts/py.mjs                 runs a service's Python from the repository root
 scripts/check-architecture.mjs yarn check:arch, with its tests beside it
 scripts/db.mjs                 yarn db:migrate and yarn db:reset, with its tests beside it
+scripts/dev.mjs                yarn dev: starts web, API, agent and OCR together
+scripts/health.mjs             waits until all four services answer
 db/schema.sql                  the whole Postgres schema
+apps/web/                      the Next.js app so far: a placeholder home page, the CSP and Host check, the API client, a smoke test
 apps/api/                      the Fastify API so far: health check and security checks
 services/agent/                the agent service so far: health check and security checks
 services/ocr/                  the OCR service so far: health check and security checks
@@ -127,11 +130,9 @@ docs/build/allowed-dependencies.json   every dependency the code may declare
 What the build steps add:
 
 ```text
-apps/web/            Next.js interface
 services/agent/      the LangGraph agent, ingestion and retrieval, on top of the skeleton
 services/ocr/        LibreOffice + RapidOCR extraction, on top of the skeleton
 evals/               eval documents, cases and runner
-scripts/             the dev runner, still to come
 ```
 
 ## Requirements
@@ -153,7 +154,7 @@ Plan on 2.5 to 4 GB of free memory while a document is being OCR'd, plus the mod
 
 ## Setup
 
-> These steps describe the finished project. Today, steps 1 to 4 work, and in step 5 only `yarn doctor` and `yarn db:reset` do. Each later command is marked with the step that builds it.
+> These steps describe the finished project. Today, steps 1 to 4 and 6 work, and in step 5 only `yarn doctor` and `yarn db:reset` do. Each later command is marked with the step that builds it.
 
 **1. Install the services.** Most need administrator rights. Full instructions are in [S01](docs/build/steps/S01-machine-setup.md) and in the architecture's [Installing the services](docs/architecture.md#installing-the-services).
 
@@ -201,7 +202,7 @@ node scripts/py.mjs agent -m app.warmup
 node scripts/py.mjs ocr -m app.warmup
 ```
 
-**6. Run it** *(planned, S06)*, then open <http://localhost:3000>. Use `localhost`, not `127.0.0.1`: the API only accepts requests from that origin.
+**6. Run it**, then open <http://localhost:3000>. Use `localhost`, not `127.0.0.1`: the API only accepts requests from that origin.
 
 ```text
 yarn dev
@@ -213,12 +214,13 @@ yarn dev
 | --- | --- |
 | `yarn doctor` | Checks every installation, version and setting, and prints what is missing. `--strict` also requires the model endpoint to answer. |
 | `yarn check:arch` | Checks that the code still matches the architecture |
-| `yarn dev` *(planned, S06)* | Starts web, API, agent and OCR together. Stopping it, or a crash of any one of them, stops all four. |
+| `yarn dev` | Starts web, API, agent and OCR together. Stopping it, or a crash of any one of them, stops all four. |
+| `node scripts/health.mjs` | Waits up to 60 seconds for all four services to answer, while `yarn dev` runs in another terminal. Exits 0 when they do. |
 | `yarn db:migrate` | Applies `db/schema.sql` to an empty database |
 | `yarn db:reset [--main\|--test\|--eval\|--all]` | Drops and recreates databases. **Deletes their data.** |
 | `yarn test` | Runs every workspace's tests (today the API, agent and OCR services) |
-| `yarn typecheck` | Type-checks the TypeScript workspaces |
-| `yarn e2e` *(planned, S06)* | Runs the Playwright end-to-end tests against a full stack that uses the stub model |
+| `yarn typecheck` | Type-checks the TypeScript workspaces (web and API) |
+| `yarn e2e` | Runs the Playwright end-to-end tests. It starts its own `yarn dev --e2e` (stop any other `yarn dev` first). Run `yarn workspace @taskmaster/web playwright install chromium` once beforehand. Today it runs three smoke tests; the stub model arrives in S13. |
 | `yarn evals [--stub] [--layer <name>]` *(planned, S23)* | Runs the eval suite and stores the scores. Needs the OCR service running. |
 
 v0 has no incremental migrations: the schema is applied whole, so `db:reset` is how the schema changes during the build.
@@ -263,7 +265,7 @@ TaskMaster talks to models through one OpenAI-compatible client, so switching be
 
 ## Testing and evals
 
-Everything in this section is *(planned, S06 to S24)*, except what exists today: the `yarn check:arch` tests, the schema tests and the API, agent and OCR security tests (`node --test scripts/check-architecture.test.mjs`, `node --env-file=.env --test scripts/db.test.mjs`, and `yarn test`).
+Everything in this section is *(planned, S07 to S24)*, except what exists today: the `yarn check:arch` tests, the schema tests, the API, agent and OCR security tests, and the web smoke test (`node --test scripts/check-architecture.test.mjs`, `node --env-file=.env --test scripts/db.test.mjs`, `yarn test` and `yarn e2e`).
 
 **Tests** never call a real model or the internet. They use a scripted, OpenAI-compatible stub model on `127.0.0.1:8099` and a separate `taskmaster_test` database.
 

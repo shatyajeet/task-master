@@ -8,3 +8,4 @@ test-results/
 playwright-report/
 .cache/
 .yarn/install-state.gz
+next-env.d.ts

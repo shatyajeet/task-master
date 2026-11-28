@@ -1,9 +1,9 @@
 ---
 step: S06
 title: "Next.js skeleton, CSP and `yarn dev`"
-status: not-started
-started:
-completed:
+status: done
+started: 2026-11-29
+completed: 2026-11-29
 ---
 
 # S06 · Next.js skeleton, CSP and `yarn dev`

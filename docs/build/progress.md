@@ -121,3 +121,24 @@ Template:
   - Routes go in `app.ts` or plugins registered after `registerSecurity`. A plugin registered with `app.register` is encapsulated, but the hook is on the root instance so it still covers it.
   - Add routes before the first `inject`: Fastify refuses new routes once it has started.
   - Use `headers()` from `test/helpers.ts` for every request, and call `resetDb()` in `beforeEach`. Imports between `.ts` files need the `.ts` extension. The hook allows only the Host values `localhost:3001` and `127.0.0.1:3001`.
+
+### S06 · Next.js skeleton, CSP and yarn dev (2026-11-29)
+
+- **Built:** `apps/web` (`@taskmaster/web`): a Next.js 16.4.6 app with a placeholder home page (heading "Workspaces", client component), `proxy.ts` (Host check, 403 otherwise), the CSP and two other headers in `next.config.ts`, and `lib/api.ts` (`request`, `ApiError`, a typed `api` object for every route in contracts.md). Also `yarn dev`, `scripts/health.mjs` and a 3-test Playwright smoke suite.
+- **Key files:** [next.config.ts](../../apps/web/next.config.ts), [proxy.ts](../../apps/web/proxy.ts), [api.ts](../../apps/web/lib/api.ts), [smoke.spec.ts](../../apps/web/e2e/smoke.spec.ts), [playwright.config.ts](../../apps/web/playwright.config.ts), [dev.mjs](../../scripts/dev.mjs), [health.mjs](../../scripts/health.mjs)
+- **Commands:** `yarn dev [--e2e]`, `node scripts/health.mjs` (all four services answered, exit 0), `yarn e2e` (3 passed), `yarn workspace @taskmaster/web typecheck`; `yarn typecheck` now includes the web app. Resolved: next 16.4.6, react and react-dom 19.3.1, react-markdown 10.1.0, remark-gfm 4.0.1, @playwright/test 1.65.1, @types/react 19.3.3, @types/react-dom 19.3.0, typescript 7.0.2 (the real app builds its types with it, which S05 left open). Chromium was installed for Playwright.
+- **Deviations:**
+  - With `--e2e`, `dev.mjs` starts the stub LLM only if `services/agent/tests/stub_llm.py` exists. S13 adds it, and starting a missing module would stop all four services, so the e2e smoke test could not run. It prints a note when it skips it.
+  - The `--e2e` upload and output folders are absolute paths under `.cache/e2e`, because the API runs from `apps/api` and a relative path would resolve there.
+  - `next.config.ts` sets `agentRules: false`, because `next dev` otherwise writes an `AGENTS.md` into `apps/web`. `next-env.d.ts` (written by Next) was added to `.gitignore`.
+  - `lib/api.ts` also exports `runEventsUrl()` and `artifactDownloadUrl()` for later steps (EventSource and download links need a URL, not a request). Response types come from `db/schema.sql` and contracts.md; S07 and later may adjust them. `EvalRun.layers` is a guess at the shape of "pass counts per layer".
+  - `tsconfig.json` overrides `module` to `esnext` and `moduleResolution` to `bundler` for Next.js; `incremental` is off so no `.tsbuildinfo` file is written.
+  - The smoke test sets the `Host` header through Playwright's request context. The step's Finish says to commit; AGENTS.md forbids it, so everything is left uncommitted.
+- **Plan files changed:** None.
+- **README:** Updated the status block (now S01 to S06), § Repository layout, § Setup (steps 6 and the intro), § Everyday commands (`yarn dev`, `yarn e2e`, health script, `yarn typecheck`) and § Testing and evals.
+- **Architecture impact:** None; matches § Local-only access (Host check in `proxy.ts`, `127.0.0.1` binding), the CSP bullet (`img-src 'self' data:`, `connect-src` limited to Fastify, `frame-src 'none'`) and § Components (port 3000).
+- **Notes for later steps:**
+  - Open the app as `http://localhost:3000`; the API's CORS allows only that origin. `API_URL` is `http://localhost:3001`.
+  - Pages are client components that import only from `lib/api.ts`. `dangerouslySetInnerHTML` and `rehype-raw` are blocked by `check:arch` (A6).
+  - `yarn e2e` runs its own `yarn dev --e2e`, so stop any other `yarn dev` first. It uses the test database, so run `yarn db:reset --test` if it holds old data.
+  - The first request to `/` after a start compiles the page, so `health.mjs` allows 15 s per request.
