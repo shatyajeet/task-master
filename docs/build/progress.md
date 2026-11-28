@@ -66,3 +66,20 @@ Template:
   - `.env` is git-ignored and holds real passwords. The agent never reads it, and the doctor reads only its key names.
   - `check:arch` reads files with `git ls-files`, so new files count as soon as they exist, even before `git add`.
   - Any new test fixture that needs a non-loopback URL must use a host ending in `.example`.
+
+### S03 · Postgres schema and database scripts (2026-11-29)
+
+- **Built:** `db/schema.sql` (15 tables, the `langgraph` schema, the `vector` extension, the `touch_updated_at` trigger), `yarn db:migrate` and `yarn db:reset [--main|--test|--eval|--all]`. All three databases were reset and the schema applied to each.
+- **Key files:** [schema.sql](../../db/schema.sql), [db.mjs](../../scripts/db.mjs), [db.test.mjs](../../scripts/db.test.mjs)
+- **Commands:** `yarn db:reset --all`, `yarn db:migrate` (exits 1 on a database that already has the schema), `node --env-file=.env --test scripts/db.test.mjs` (4 tests).
+- **Deviations:**
+  - `reset` accepts several flags together (`--test --eval`), and rejects an unknown flag with exit 2. The step names only the single flags.
+  - Database names must be lowercase letters, digits and underscores. Statements that name a database use `escapeIdentifier`, since identifiers cannot be parameters.
+  - The test for the one-active-run rule also checks that `done` and `cancelled` runs do not block a new one.
+- **Plan files changed:** None.
+- **README:** Updated the status block (now S01 to S03), § Repository layout, § Setup (step 5), § Everyday commands and § Testing and evals; removed the *(planned, S03)* marks.
+- **Architecture impact:** None; matches § Data model and § Local-only access (`PG_ADMIN_URL` only creates databases and the extension; the app uses the `taskmaster` role).
+- **Notes for later steps:**
+  - `yarn db:reset` deletes data. Run `yarn db:reset --test` to clean the test database.
+  - The `langgraph` schema is created empty; the LangGraph checkpointer's tables are created by the agent later.
+  - `db.test.mjs` leaves the test database empty by deleting the workspaces it creates.

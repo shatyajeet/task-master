@@ -1,9 +1,9 @@
 ---
 step: S03
 title: "Postgres schema and database scripts"
-status: not-started
-started:
-completed:
+status: done
+started: 2026-11-29
+completed: 2026-11-29
 ---
 
 # S03 · Postgres schema and database scripts

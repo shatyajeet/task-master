@@ -2,7 +2,7 @@
 
 TaskMaster is a single-user AI coworker that runs entirely on one Windows laptop. You create a workspace and add documents in most office formats. You then chat with an agent that searches them, follows the relationships between the people, projects and organizations they mention, drafts artifacts, and asks before it writes any file.
 
-> **Status: being built. Steps S01 to S02 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor` and `yarn check:arch` work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
+> **Status: being built. Steps S01 to S03 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor`, `yarn check:arch` and the database scripts work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
 >
 > ```text
 > git grep -n "^status:" -- docs/build/steps
@@ -110,6 +110,8 @@ tsconfig.base.json             shared TypeScript settings
 scripts/doctor.mjs             yarn doctor: checks the installation
 scripts/py.mjs                 runs a service's Python from the repository root
 scripts/check-architecture.mjs yarn check:arch, with its tests beside it
+scripts/db.mjs                 yarn db:migrate and yarn db:reset, with its tests beside it
+db/schema.sql                  the whole Postgres schema
 docs/architecture.md           the final design
 docs/build/README.md           build rules, step index, implementation choices
 docs/build/contracts.md        ports, environment, APIs, payloads, events
@@ -126,8 +128,7 @@ apps/api/            Fastify API
 services/agent/      FastAPI + LangGraph agent, ingestion and retrieval
 services/ocr/        FastAPI + LibreOffice + RapidOCR
 evals/               eval documents, cases and runner
-db/schema.sql        the whole Postgres schema
-scripts/             database and dev runner scripts still to come
+scripts/             the dev runner, still to come
 ```
 
 ## Requirements
@@ -188,7 +189,7 @@ py -3.14 -m venv services\ocr\.venv
 services\ocr\.venv\Scripts\pip install --require-hashes -r services\ocr\requirements.txt
 ```
 
-**5. Check, create the databases, and download the local models.** Only `yarn doctor` works today. `yarn db:reset` is *(planned, S03)*, and the two warm-ups are *(planned, S09 for OCR and S12 for the agent)*:
+**5. Check, create the databases, and download the local models.** `yarn doctor` and `yarn db:reset` work today, and the two warm-ups are *(planned, S09 for OCR and S12 for the agent)*:
 
 ```text
 yarn doctor
@@ -210,8 +211,8 @@ yarn dev
 | `yarn doctor` | Checks every installation, version and setting, and prints what is missing. `--strict` also requires the model endpoint to answer. |
 | `yarn check:arch` | Checks that the code still matches the architecture |
 | `yarn dev` *(planned, S06)* | Starts web, API, agent and OCR together. Stopping it, or a crash of any one of them, stops all four. |
-| `yarn db:migrate` *(planned, S03)* | Applies `db/schema.sql` to an empty database |
-| `yarn db:reset [--main\|--test\|--eval\|--all]` *(planned, S03)* | Drops and recreates databases. **Deletes their data.** |
+| `yarn db:migrate` | Applies `db/schema.sql` to an empty database |
+| `yarn db:reset [--main\|--test\|--eval\|--all]` | Drops and recreates databases. **Deletes their data.** |
 | `yarn test` *(planned, S04)* | Runs every workspace's tests |
 | `yarn typecheck` *(planned, S05)* | Type-checks the TypeScript workspaces |
 | `yarn e2e` *(planned, S06)* | Runs the Playwright end-to-end tests against a full stack that uses the stub model |
@@ -259,7 +260,7 @@ TaskMaster talks to models through one OpenAI-compatible client, so switching be
 
 ## Testing and evals
 
-Everything in this section is *(planned, S04 to S24)*; only the `yarn check:arch` tests exist today (`node --test scripts/check-architecture.test.mjs`).
+Everything in this section is *(planned, S04 to S24)*; only the `yarn check:arch` tests and the schema tests exist today (`node --test scripts/check-architecture.test.mjs` and `node --env-file=.env --test scripts/db.test.mjs`).
 
 **Tests** never call a real model or the internet. They use a scripted, OpenAI-compatible stub model on `127.0.0.1:8099` and a separate `taskmaster_test` database.
 
