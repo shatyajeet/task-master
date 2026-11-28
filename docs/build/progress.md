@@ -102,3 +102,22 @@ Template:
   - `Settings` requires `INTERNAL_TOKEN` (and `DATABASE_URL` in the agent), so a missing value stops the service at start-up. Resolved versions: fastapi 0.165.0, uvicorn 0.55.0, pytest 9.2.0, pytest-asyncio 1.5.0, rapidocr 3.10.0.
   - New routes go in `app/main.py` inside `create_app()`; the middleware wraps every route, so they are protected by default.
   - Later tests reuse `call()` from `conftest.py` or add a client. A new library needs the user's agreement.
+
+### S05 · Fastify skeleton and security hooks (2026-11-29)
+
+- **Built:** `apps/api` (`@taskmaster/api`): `buildApp(config)` returns a Fastify 5 instance without listening, with the `onRequest` security hook (Host, Origin, `X-TaskMaster`), CORS for `http://localhost:3000`, the `{error, message}` error handler, a `pg.Pool` (max 10) and `GET /health`. `server.ts` listens on `127.0.0.1:3001`.
+- **Key files:** [app.ts](../../apps/api/src/app.ts), [security.ts](../../apps/api/src/security.ts), [errors.ts](../../apps/api/src/errors.ts), [config.ts](../../apps/api/src/config.ts), [db.ts](../../apps/api/src/db.ts), [helpers.ts](../../apps/api/test/helpers.ts), [security.test.ts](../../apps/api/test/security.test.ts)
+- **Commands:** `yarn workspace @taskmaster/api test` (5 tests) and `typecheck`; `yarn typecheck` and `yarn test` now include the API. Resolved: fastify 5.12.8, @fastify/cors 11.4.3, @fastify/multipart 10.1.9, pg 8.23.1, typescript 7.0.2 (the whole repo, after the change described under Deviations). The real server answered `/health` with 200, was bound to `127.0.0.1:3001` only, and was stopped afterwards.
+- **Deviations:**
+  - `typescript` is `^7.0.2` in both the root and `apps/api`, so the whole repo uses one version. At the user's request the root range was raised from `^5.9.0` (S02). Before that, a throwaway Next 16.4.6 project outside the repository built on TypeScript 7.0.2 and still failed the build on a type error, so Next 16 works with it. The real `apps/web` is not built yet, so S06 must confirm it. The S02 entry above still says 5.9.3, which was true then.
+  - `buildApp` is async (it awaits the CORS plugin) and creates its own pool and closes it on `app.close()`, instead of a module-level pool. `db.ts` exports `createPool(url)`, and the pool is `app.db`. Tests pass `TEST_DATABASE_URL` through `loadConfig`.
+  - `resetDb()` refuses to run unless the database name ends in `_test`. `errors.ts` also exports `HttpError` for later routes, and maps oversize and wrong-media-type body errors to 413 `too_large` and 415 `unsupported_type`. Other 4xx errors become `bad_request`, and 5xx errors never reveal their text.
+  - `@fastify/multipart` is in the manifest but not registered yet; S10 uses it. The step's Finish says "commit everything", but AGENTS.md forbids it, so the changes are left uncommitted.
+  - `resetDb()` and the error handler were checked once by a throwaway script outside the repository (they have no test of their own): it emptied `workspaces`, kept `eval_runs`, and returned 404, 400 `validation`, 500 `internal` and 400 `bad_request` bodies in the right shape.
+- **Plan files changed:** None.
+- **README:** Updated the status block (now S01 to S05), § Repository layout, § Everyday commands (`yarn test`, `yarn typecheck`) and § Testing and evals.
+- **Architecture impact:** None; matches § Local-only access (127.0.0.1 binding, Host and Origin checks, `X-TaskMaster`, CORS) and § Components (port 3001).
+- **Notes for later steps:**
+  - Routes go in `app.ts` or plugins registered after `registerSecurity`. A plugin registered with `app.register` is encapsulated, but the hook is on the root instance so it still covers it.
+  - Add routes before the first `inject`: Fastify refuses new routes once it has started.
+  - Use `headers()` from `test/helpers.ts` for every request, and call `resetDb()` in `beforeEach`. Imports between `.ts` files need the `.ts` extension. The hook allows only the Host values `localhost:3001` and `127.0.0.1:3001`.

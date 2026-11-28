@@ -1,9 +1,9 @@
 ---
 step: S05
 title: "Fastify skeleton and security hooks"
-status: not-started
-started:
-completed:
+status: done
+started: 2026-11-29
+completed: 2026-11-29
 ---
 
 # S05 · Fastify skeleton and security hooks
