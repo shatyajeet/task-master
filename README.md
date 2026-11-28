@@ -2,7 +2,7 @@
 
 TaskMaster is a single-user AI coworker that runs entirely on one Windows laptop. You create a workspace and add documents in most office formats. You then chat with an agent that searches them, follows the relationships between the people, projects and organizations they mention, drafts artifacts, and asks before it writes any file.
 
-> **Status: designed, not built yet.** The architecture is final and the build plan is written, but no application code exists. The commands in this README describe how TaskMaster will work once the 25 build steps are done. To see how far the build has got, run:
+> **Status: being built. Steps S01 to S02 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor` and `yarn check:arch` work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
 >
 > ```text
 > git grep -n "^status:" -- docs/build/steps
@@ -104,6 +104,12 @@ What exists today:
 ```text
 AGENTS.md                      how coding agents work through the build steps
 CLAUDE.md                      imports AGENTS.md for Claude Code
+package.json, yarn.lock        the Yarn workspace root and its commands
+.env.example                   every setting, with placeholder values
+tsconfig.base.json             shared TypeScript settings
+scripts/doctor.mjs             yarn doctor: checks the installation
+scripts/py.mjs                 runs a service's Python from the repository root
+scripts/check-architecture.mjs yarn check:arch, with its tests beside it
 docs/architecture.md           the final design
 docs/build/README.md           build rules, step index, implementation choices
 docs/build/contracts.md        ports, environment, APIs, payloads, events
@@ -121,7 +127,7 @@ services/agent/      FastAPI + LangGraph agent, ingestion and retrieval
 services/ocr/        FastAPI + LibreOffice + RapidOCR
 evals/               eval documents, cases and runner
 db/schema.sql        the whole Postgres schema
-scripts/             doctor, database, dev runner, architecture check
+scripts/             database and dev runner scripts still to come
 ```
 
 ## Requirements
@@ -143,7 +149,7 @@ Plan on 2.5 to 4 GB of free memory while a document is being OCR'd, plus the mod
 
 ## Setup
 
-> These steps describe the finished project. Until the build reaches S06, only S01 and the parts that already exist will work.
+> These steps describe the finished project. Today, steps 1 to 3 work, and in step 5 only `yarn doctor` does. Each later command is marked with the step that builds it.
 
 **1. Install the services.** Most need administrator rights. Full instructions are in [S01](docs/build/steps/S01-machine-setup.md) and in the architecture's [Installing the services](docs/architecture.md#installing-the-services).
 
@@ -172,7 +178,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 Fill in `.env`. Put the generated value in `INTERNAL_TOKEN`, and add your database passwords and model settings.
 
-**4. Install the dependencies** from the committed lockfiles:
+**4. Install the dependencies** from the committed lockfiles. The Python lines work from S04 on, when the services and their lockfiles exist *(planned, S04)*:
 
 ```text
 yarn install --immutable
@@ -182,7 +188,7 @@ py -3.14 -m venv services\ocr\.venv
 services\ocr\.venv\Scripts\pip install --require-hashes -r services\ocr\requirements.txt
 ```
 
-**5. Check, create the databases, and download the local models.**
+**5. Check, create the databases, and download the local models.** Only `yarn doctor` works today. `yarn db:reset` is *(planned, S03)*, and the two warm-ups are *(planned, S09 for OCR and S12 for the agent)*:
 
 ```text
 yarn doctor
@@ -191,7 +197,7 @@ node scripts/py.mjs agent -m app.warmup
 node scripts/py.mjs ocr -m app.warmup
 ```
 
-**6. Run it**, then open <http://localhost:3000>. Use `localhost`, not `127.0.0.1`: the API only accepts requests from that origin.
+**6. Run it** *(planned, S06)*, then open <http://localhost:3000>. Use `localhost`, not `127.0.0.1`: the API only accepts requests from that origin.
 
 ```text
 yarn dev
@@ -201,15 +207,15 @@ yarn dev
 
 | Command | Does |
 | --- | --- |
-| `yarn dev` | Starts web, API, agent and OCR together. Stopping it, or a crash of any one of them, stops all four. |
 | `yarn doctor` | Checks every installation, version and setting, and prints what is missing. `--strict` also requires the model endpoint to answer. |
-| `yarn db:migrate` | Applies `db/schema.sql` to an empty database |
-| `yarn db:reset [--main\|--test\|--eval\|--all]` | Drops and recreates databases. **Deletes their data.** |
-| `yarn test` | Runs every workspace's tests |
-| `yarn typecheck` | Type-checks the TypeScript workspaces |
-| `yarn e2e` | Runs the Playwright end-to-end tests against a full stack that uses the stub model |
-| `yarn evals [--stub] [--layer <name>]` | Runs the eval suite and stores the scores. Needs the OCR service running. |
 | `yarn check:arch` | Checks that the code still matches the architecture |
+| `yarn dev` *(planned, S06)* | Starts web, API, agent and OCR together. Stopping it, or a crash of any one of them, stops all four. |
+| `yarn db:migrate` *(planned, S03)* | Applies `db/schema.sql` to an empty database |
+| `yarn db:reset [--main\|--test\|--eval\|--all]` *(planned, S03)* | Drops and recreates databases. **Deletes their data.** |
+| `yarn test` *(planned, S04)* | Runs every workspace's tests |
+| `yarn typecheck` *(planned, S05)* | Type-checks the TypeScript workspaces |
+| `yarn e2e` *(planned, S06)* | Runs the Playwright end-to-end tests against a full stack that uses the stub model |
+| `yarn evals [--stub] [--layer <name>]` *(planned, S23)* | Runs the eval suite and stores the scores. Needs the OCR service running. |
 
 v0 has no incremental migrations: the schema is applied whole, so `db:reset` is how the schema changes during the build.
 
@@ -252,6 +258,8 @@ TaskMaster talks to models through one OpenAI-compatible client, so switching be
 - `qwen3.5:4b` is about a 3.4 GB download and `qwen3.5:9b` about 6.6 GB, and each needs about 2 GB more memory than that. On this laptop, a hosted model is the practical day-to-day choice.
 
 ## Testing and evals
+
+Everything in this section is *(planned, S04 to S24)*; only the `yarn check:arch` tests exist today (`node --test scripts/check-architecture.test.mjs`).
 
 **Tests** never call a real model or the internet. They use a scripted, OpenAI-compatible stub model on `127.0.0.1:8099` and a separate `taskmaster_test` database.
 

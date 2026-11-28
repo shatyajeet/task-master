@@ -1,0 +1,10 @@
+node_modules/
+.venv/
+.env
+.next/
+__pycache__/
+.pytest_cache/
+test-results/
+playwright-report/
+.cache/
+.yarn/install-state.gz

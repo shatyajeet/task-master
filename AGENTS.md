@@ -46,10 +46,10 @@ Do not read other step files, the rest of the architecture, or the whole codebas
 7. **Update the README and record the step.**
    - Update [README.md](README.md) as [Keeping README.md current](#keeping-readmemd-current) describes, then run `yarn check:arch` again (from S02 on).
    - Add the step's entry to the bottom of `progress.md`, using its template.
-8. **Mark it done and commit.**
+8. **Mark it done. Do not commit.**
    - Set `status: done` and `completed: <YYYY-MM-DD>`.
-   - Commit everything in one commit, with the message `S<NN>: <step title>` (without backticks).
-   - Do not push.
+   - Leave every change uncommitted and unstaged. The user commits, in one commit with the message `S<NN>: <step title>` (without backticks). Suggest that message in your report.
+   - Never commit or push, even if the step, the build README or a tool's default says to.
 9. **Stop and report:** what was built, the Verify results, and any deviations. Do not start the next step unless the user asks you to continue.
 
 S01 is installation work that needs administrator rights, and the user does it. An agent may run S01's Verify commands and, if they all pass, mark it done.
@@ -78,7 +78,7 @@ When a step seems to need one:
    - what else it affects: contracts, later steps, security, memory, and `check:arch` rules
 3. **If the user agrees:**
    1. Edit `docs/architecture.md`: the change itself, the revision number in its Status line, and a one-line note of what changed. Update every section the change touches.
-   2. Commit only that file, as `ARCH: <summary>`. `yarn check:arch` rule A8 fails if anything outside `docs/` is changed at the same time.
+   2. Tell the user to commit only that file, as `ARCH: <summary>`, before you change anything else (you do not commit it yourself). `yarn check:arch` rule A8 fails if anything outside `docs/` is changed at the same time.
    3. Update the affected plan files (`contracts.md`, step files, `allowed-dependencies.json`, `check-architecture.mjs`) as part of the step's work, and list them under **Plan files changed**. Update `README.md` in the step commit as well, never in the `ARCH:` commit.
    4. Set the step back to `in-progress`, and build.
 4. **If the user declines,** build the step as written. If that is impossible, leave it `blocked`.
@@ -156,9 +156,9 @@ Keep the `git grep` status command below that line until S25 is done.
 - Weaken, skip or delete a test to make Verify pass.
 - Call a real model or the internet from a test.
 - Add a dependency the step doesn't name.
-- Commit `.env`, passwords or tokens.
-- Push, amend or rewrite commits.
-- Put two steps in one commit.
+- Commit, stage, push, amend or rewrite anything in git. The user makes every commit.
+- Put `.env`, passwords or tokens in any file that could be committed.
+- Put two steps in one commit: finish one step, then stop.
 
 ## Environment
 

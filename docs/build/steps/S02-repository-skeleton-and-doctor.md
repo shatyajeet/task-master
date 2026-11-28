@@ -1,9 +1,9 @@
 ---
 step: S02
 title: "Repository skeleton and doctor"
-status: not-started
-started:
-completed:
+status: done
+started: 2026-11-29
+completed: 2026-11-29
 ---
 
 # S02 · Repository skeleton and doctor

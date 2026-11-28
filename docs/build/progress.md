@@ -47,3 +47,22 @@ Template:
   - Postgres data folder is `C:\Program Files\PostgreSQL\19\data`.
   - pgvector was built in `%TEMP%\pgvector`, which can be deleted.
   - `PG_ADMIN_URL` and the `taskmaster` password go in `.env` (S02 onward), never in a commit.
+
+### S02 · Repository skeleton and doctor (2026-11-29)
+
+- **Built:** The Yarn 4.19.0 workspace root, `.env.example`, `yarn doctor` (8 checks), `scripts/py.mjs`, and `yarn check:arch` with rules A1 to A9. `yarn install` resolved `pg` 8.23.1 and `typescript` 5.9.3.
+- **Key files:** [package.json](../../package.json), [doctor.mjs](../../scripts/doctor.mjs), [py.mjs](../../scripts/py.mjs), [check-architecture.mjs](../../scripts/check-architecture.mjs), [check-architecture.test.mjs](../../scripts/check-architecture.test.mjs), [.env.example](../../.env.example)
+- **Commands:** `yarn doctor [--strict]`, `yarn check:arch [--root <dir>]`, `node --test scripts/check-architecture.test.mjs` (41 tests), `node scripts/py.mjs <agent|ocr> <args>`. The other scripts in `package.json` point at files that S03, S06 and S23 create.
+- **Deviations:**
+  - The LibreOffice check reads the version from the exe's file properties and never runs `soffice.exe --version`. On Windows that command opens a console window and prints nothing (also found in S01).
+  - The source rules A2 to A7 skip `scripts/check-architecture.mjs` and its test, because they must spell out the forbidden patterns. Their manifests and rules A1, A8 and A9 still apply.
+  - A2 also accepts `--hostname 127.0.0.1` as well as `-H`. A4 also scans `package.json` scripts. A5 also covers `executemany(`. A violation is reported once per rule per line.
+  - `.gitignore` also lists `.yarn/install-state.gz`, a Yarn cache file.
+  - The model-endpoint check warned in the final run (it could not reach the configured endpoint). The step makes that a warning unless `--strict`.
+- **Plan files changed:** None.
+- **README:** Updated the status block (now S01 to S02), § Repository layout, § Setup, § Everyday commands and § Testing and evals, with *(planned, S<NN>)* marks on everything that does not work yet.
+- **Architecture impact:** None; matches § Local-only access, § Components and the fixed ports. The checker only reads the architecture's rules.
+- **Notes for later steps:**
+  - `.env` is git-ignored and holds real passwords. The agent never reads it, and the doctor reads only its key names.
+  - `check:arch` reads files with `git ls-files`, so new files count as soon as they exist, even before `git add`.
+  - Any new test fixture that needs a non-loopback URL must use a host ending in `.example`.

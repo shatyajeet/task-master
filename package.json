@@ -1,0 +1,27 @@
+{
+  "name": "taskmaster",
+  "private": true,
+  "packageManager": "yarn@4.19.0",
+  "engines": {
+    "node": ">=26.13.1"
+  },
+  "workspaces": [
+    "apps/*",
+    "services/*"
+  ],
+  "scripts": {
+    "doctor": "node --env-file=.env scripts/doctor.mjs",
+    "db:migrate": "node --env-file=.env scripts/db.mjs migrate",
+    "db:reset": "node --env-file=.env scripts/db.mjs reset",
+    "dev": "node --env-file=.env scripts/dev.mjs",
+    "e2e": "yarn workspace @taskmaster/web e2e",
+    "test": "yarn workspaces foreach -Av run test",
+    "typecheck": "yarn workspaces foreach -Av run typecheck",
+    "evals": "node --env-file=.env scripts/py.mjs agent -m evals.runner",
+    "check:arch": "node scripts/check-architecture.mjs"
+  },
+  "devDependencies": {
+    "pg": "^8.23.1",
+    "typescript": "^5.9.0"
+  }
+}
