@@ -1,9 +1,9 @@
 ---
 step: S07
 title: "Workspaces and threads API"
-status: not-started
-started:
-completed:
+status: done
+started: 2026-11-29
+completed: 2026-11-29
 ---
 
 # S07 · Workspaces and threads API

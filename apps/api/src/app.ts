@@ -6,6 +6,8 @@ import { WEB_ORIGIN } from "./config.ts";
 import type { Config } from "./config.ts";
 import { createPool } from "./db.ts";
 import { registerErrors } from "./errors.ts";
+import { registerThreadRoutes } from "./routes/threads.ts";
+import { registerWorkspaceRoutes } from "./routes/workspaces.ts";
 import { registerSecurity } from "./security.ts";
 
 declare module "fastify" {
@@ -48,6 +50,9 @@ export async function buildApp(config: Config): Promise<FastifyInstance> {
     },
     async () => ({ ok: true }),
   );
+
+  registerWorkspaceRoutes(app, config.uploadDir);
+  registerThreadRoutes(app);
 
   return app;
 }

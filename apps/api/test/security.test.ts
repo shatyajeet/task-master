@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
 import { after, before, describe, it } from "node:test";
 import type { FastifyInstance } from "fastify";
-import { headers, makeApp } from "./helpers.ts";
+import { headers, makeApp, makeUploadDir } from "./helpers.ts";
 
 describe("security hooks", () => {
   let app: FastifyInstance;
 
+  let uploadDir: string;
+
   before(async () => {
-    app = await makeApp();
+    uploadDir = await makeUploadDir();
+    app = await makeApp(uploadDir);
   });
 
   after(async () => {
     await app.close();
+    await fs.rm(uploadDir, { recursive: true, force: true });
   });
 
   it("GET /health returns 200", async () => {

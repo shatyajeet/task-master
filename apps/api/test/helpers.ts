@@ -1,3 +1,6 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import type { FastifyInstance } from "fastify";
 import pg from "pg";
 import { buildApp } from "../src/app.ts";
@@ -10,9 +13,18 @@ export function testDatabaseUrl(): string {
   return url;
 }
 
-/** Builds the app on the test database, with logging off. */
-export async function makeApp(): Promise<FastifyInstance> {
-  const config = loadConfig({ ...process.env, DATABASE_URL: testDatabaseUrl() });
+/** A new empty folder under the system temp folder, for tests that touch uploaded files. */
+export async function makeUploadDir(): Promise<string> {
+  return fs.mkdtemp(path.join(os.tmpdir(), "taskmaster-test-uploads-"));
+}
+
+/**
+ * Builds the app on the test database, with logging off.
+ * Files go to `uploadDir`, which tests must give a folder of their own (see `makeUploadDir`),
+ * so a test never touches the real `UPLOAD_DIR`.
+ */
+export async function makeApp(uploadDir: string): Promise<FastifyInstance> {
+  const config = loadConfig({ ...process.env, DATABASE_URL: testDatabaseUrl(), UPLOAD_DIR: uploadDir });
   return buildApp({ ...config, logger: false });
 }
 

@@ -142,3 +142,22 @@ Template:
   - Pages are client components that import only from `lib/api.ts`. `dangerouslySetInnerHTML` and `rehype-raw` are blocked by `check:arch` (A6).
   - `yarn e2e` runs its own `yarn dev --e2e`, so stop any other `yarn dev` first. It uses the test database, so run `yarn db:reset --test` if it holds old data.
   - The first request to `/` after a start compiles the page, so `health.mjs` allows 15 s per request.
+
+### S07 · Workspaces and threads API (2026-11-29)
+
+- **Built:** The workspace routes (create, list, get, rename, delete) and thread routes (create, list, rename, delete, list messages) from contracts.md, registered in `buildApp`. Deleting a workspace removes the row, then `UPLOAD_DIR\<wid>`. Deleting a thread with a queued, running or awaiting-approval run returns 409 `active_run`.
+- **Key files:** [workspaces.ts](../../apps/api/src/routes/workspaces.ts), [threads.ts](../../apps/api/src/routes/threads.ts), [workspaces.test.ts](../../apps/api/test/workspaces.test.ts), [threads.test.ts](../../apps/api/test/threads.test.ts), [config.ts](../../apps/api/src/config.ts), [helpers.ts](../../apps/api/test/helpers.ts)
+- **Commands:** `yarn workspace @taskmaster/api test` now runs 19 tests (5 security, 8 threads, 6 workspaces), and `typecheck` passes.
+- **Deviations:**
+  - `Config` gained `uploadDir`, read from `UPLOAD_DIR`, and `loadConfig` throws if it is missing. `makeApp(uploadDir)` in `test/helpers.ts` now takes the folder, and `makeUploadDir()` makes a temp one, so no test touches the real `UPLOAD_DIR`. `security.test.ts` was changed to use them.
+  - A malformed ID (not a UUID) in a path returns 404, not 400, through `requireUuid()` in `workspaces.ts`, so Postgres never sees it. Thread routes under a missing workspace return 404 too.
+  - Fastify's validator coerces types, so `{"name": 5}` or `{"name": ["a"]}` is stored as a string and returns 201. Only a missing, null, empty or too-long name returns 400. Coercion was left on because later query parameters such as `?after=<seq>` need it.
+  - `POST .../threads` also accepts no body at all, and gives the thread the column default title `New thread`.
+  - The step's Finish says to commit; AGENTS.md forbids it, so the changes are left uncommitted.
+- **Plan files changed:** None.
+- **README:** Updated the status block (now S01 to S07), § Repository layout (`apps/api`) and § Testing and evals.
+- **Architecture impact:** None; matches § Data model (workspaces, threads, messages, the one-active-run index) and § Local-only access (the security hook covers the new routes).
+- **Notes for later steps:**
+  - New route modules export `register...Routes(app, ...)` and are called from `buildApp` in `app.ts`. Reuse `requireUuid()` for path IDs.
+  - Responses list their columns explicitly, so a new column is not exposed until the route's `COLUMNS` string is changed.
+  - Tests that create workspaces get an empty folder from `makeUploadDir()`; remove it in `after`.

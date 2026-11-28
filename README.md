@@ -2,7 +2,7 @@
 
 TaskMaster is a single-user AI coworker that runs entirely on one Windows laptop. You create a workspace and add documents in most office formats. You then chat with an agent that searches them, follows the relationships between the people, projects and organizations they mention, drafts artifacts, and asks before it writes any file.
 
-> **Status: being built. Steps S01 to S06 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor`, `yarn check:arch`, the database scripts, `yarn dev`, and the bare web, API, agent and OCR services (a health check and the security checks, and in the web app a placeholder home page) work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
+> **Status: being built. Steps S01 to S07 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor`, `yarn check:arch`, the database scripts, `yarn dev`, the bare web, agent and OCR services (a health check and the security checks, and in the web app a placeholder home page), and the API's workspace and thread routes work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
 >
 > ```text
 > git grep -n "^status:" -- docs/build/steps
@@ -116,7 +116,7 @@ scripts/dev.mjs                yarn dev: starts web, API, agent and OCR together
 scripts/health.mjs             waits until all four services answer
 db/schema.sql                  the whole Postgres schema
 apps/web/                      the Next.js app so far: a placeholder home page, the CSP and Host check, the API client, a smoke test
-apps/api/                      the Fastify API so far: health check and security checks
+apps/api/                      the Fastify API so far: health check, security checks, workspaces and threads
 services/agent/                the agent service so far: health check and security checks
 services/ocr/                  the OCR service so far: health check and security checks
 docs/architecture.md           the final design
@@ -265,7 +265,7 @@ TaskMaster talks to models through one OpenAI-compatible client, so switching be
 
 ## Testing and evals
 
-Everything in this section is *(planned, S07 to S24)*, except what exists today: the `yarn check:arch` tests, the schema tests, the API, agent and OCR security tests, and the web smoke test (`node --test scripts/check-architecture.test.mjs`, `node --env-file=.env --test scripts/db.test.mjs`, `yarn test` and `yarn e2e`).
+Everything in this section is *(planned, S08 to S24)*, except what exists today: the `yarn check:arch` tests, the schema tests, the API tests (security, workspaces and threads), the agent and OCR security tests, and the web smoke test (`node --test scripts/check-architecture.test.mjs`, `node --env-file=.env --test scripts/db.test.mjs`, `yarn test` and `yarn e2e`).
 
 **Tests** never call a real model or the internet. They use a scripted, OpenAI-compatible stub model on `127.0.0.1:8099` and a separate `taskmaster_test` database.
 
