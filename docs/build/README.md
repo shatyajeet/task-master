@@ -23,7 +23,7 @@ Every step file starts with `status:`, which is one of these:
 | `not-started` | Nobody has begun it |
 | `in-progress` | An agent is working on it, or stopped partway. The next agent resumes it. |
 | `blocked` | It cannot continue without the user. The step's **Blocked** section says why. |
-| `done` | Every **Verify** command passed, its progress entry exists, and it is committed |
+| `done` | Every **Verify** command passed, and its progress entry exists. The user commits it. |
 
 To list every step's status:
 
@@ -45,7 +45,7 @@ A `done` step can be checked at any time by running its **Verify** commands agai
 8. **Stable ordering.** Every query that returns a list has an `ORDER BY` that ends on a unique column.
 9. **Constants live in config.** Every limit and timeout in this plan is read from the environment variable named for it in [contracts.md](contracts.md#ports-and-environment), with the default given there. Tests shorten timeouts by setting those variables.
 10. **Text files** are UTF-8 with LF line endings (`.gitattributes` enforces this).
-11. **One commit per step**, with the message `S<NN>: <step title>`. It contains the step's code, its progress entry, and its `status: done`.
+11. **One commit per step, made by the user**, with the message `S<NN>: <step title>`. It contains the step's code, its progress entry, and its `status: done`. The agent leaves its changes uncommitted and never commits or pushes.
 12. **If a step is ambiguous, stop.** Ask the user. Once they agree, fix the step file (and `contracts.md` if needed), record the fix in `progress.md`, and then build. Do not improvise.
 13. **The architecture is checked, not trusted.** From S02 on, every step finishes with `yarn check:arch`. Anything that would make the code differ from [architecture.md](../architecture.md) is an architecture change: it needs the user's agreement and its own `ARCH:` commit first, as [AGENTS.md](../../AGENTS.md#architecture-changes) describes.
 

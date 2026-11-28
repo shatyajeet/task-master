@@ -343,8 +343,8 @@ The build is split into 25 steps, each small enough for a coding agent to finish
   2. updates this README to match what now exists
   3. records what it built and any deviations in `progress.md`
   4. sets the status to `done`
-  5. commits once, as `S<NN>: <title>`
-  6. stops
+  5. stops, leaving every change uncommitted
+- You review the changes and make one commit per step, as `S<NN>: <title>`. The agent never commits or pushes.
 - Lockfiles are committed and installs are reproducible. Tests use only the stub model.
 
 To build the next step, open an agent session in this repository and ask it to continue the build. [AGENTS.md](AGENTS.md) tells it which step is next.
