@@ -83,3 +83,22 @@ Template:
   - `yarn db:reset` deletes data. Run `yarn db:reset --test` to clean the test database.
   - The `langgraph` schema is created empty; the LangGraph checkpointer's tables are created by the agent later.
   - `db.test.mjs` leaves the test database empty by deleting the workspaces it creates.
+
+### S04 · Agent and OCR service skeletons (2026-11-29)
+
+- **Built:** `services/agent` and `services/ocr`: a FastAPI app with `GET /health`, the Host and `X-Internal-Token` middleware, a pydantic-settings `Settings`, `app/serve.py` (G12), hashed lockfiles and pytest suites (agent 4 tests, OCR 3). Both venvs are installed from the lockfiles.
+- **Key files:** [security.py](../../services/agent/app/security.py), [config.py](../../services/agent/app/config.py), [serve.py](../../services/agent/app/serve.py), [conftest.py](../../services/agent/tests/conftest.py), [requirements.txt](../../services/agent/requirements.txt), [OCR requirements.txt](../../services/ocr/requirements.txt)
+- **Commands:** `yarn workspace @taskmaster/<agent|ocr> test` and `lint`, `yarn test` (runs both). `node --env-file=.env scripts/py.mjs <svc> -m app.serve` starts a service; both answered `/health` with 200 and `/x` without a token with 401.
+- **Deviations:**
+  - OCR's dependencies do not include `httpx`, so the tests call the ASGI app directly through a small `call()` helper in each `conftest.py` instead of using a test client. The agent uses the same helper.
+  - `app/serve.py` has a `run_in_loop()` helper, which `main()` uses. The loop test runs a coroutine through it, because the pytest loop itself is not the server's.
+  - The lockfiles were compiled without `--allow-unsafe`, so `pip` and `setuptools` are not pinned. With it, `pip.exe` cannot replace itself on Windows and the Verify command fails.
+  - The middleware rejects duplicate `Host` or `X-Internal-Token` headers and closes websocket connections. `yarn install` ran once to register the two new workspaces in `yarn.lock`.
+  - `pyproject.toml` also sets `asyncio_default_fixture_loop_scope = "function"` to silence a pytest-asyncio warning. The tests add `DATABASE_URL` (agent) and `INTERNAL_TOKEN` to the process environment.
+- **Plan files changed:** None.
+- **README:** Updated the status block (now S01 to S04), § Repository layout, § Setup (step 4 now installs the `-dev` files, and its planned mark is gone), § Everyday commands (`yarn test`) and § Testing and evals.
+- **Architecture impact:** None; matches § Local-only access (Host check, internal token, `127.0.0.1` binding) and § Components (ports 8000 and 8001).
+- **Notes for later steps:**
+  - `Settings` requires `INTERNAL_TOKEN` (and `DATABASE_URL` in the agent), so a missing value stops the service at start-up. Resolved versions: fastapi 0.165.0, uvicorn 0.55.0, pytest 9.2.0, pytest-asyncio 1.5.0, rapidocr 3.10.0.
+  - New routes go in `app/main.py` inside `create_app()`; the middleware wraps every route, so they are protected by default.
+  - Later tests reuse `call()` from `conftest.py` or add a client. A new library needs the user's agreement.

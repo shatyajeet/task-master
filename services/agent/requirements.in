@@ -1,0 +1,12 @@
+fastapi>=0.165.0,<1
+uvicorn>=0.55.0,<1
+pydantic-settings
+httpx
+psycopg[binary,pool]>=3.3.9,<4
+pgvector
+langgraph>=1.2.24,<2
+langgraph-checkpoint-postgres>=3.2.1,<4
+langchain-openai>=1.8.5,<2
+fastembed>=0.9.1,<1
+onnxruntime>=1.32.0,<2
+rapidfuzz

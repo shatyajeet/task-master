@@ -2,7 +2,7 @@
 
 TaskMaster is a single-user AI coworker that runs entirely on one Windows laptop. You create a workspace and add documents in most office formats. You then chat with an agent that searches them, follows the relationships between the people, projects and organizations they mention, drafts artifacts, and asks before it writes any file.
 
-> **Status: being built. Steps S01 to S03 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor`, `yarn check:arch` and the database scripts work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
+> **Status: being built. Steps S01 to S04 of 25 are done.** The architecture is final and the build plan is written. Only the machine setup, `yarn doctor`, `yarn check:arch`, the database scripts and the bare agent and OCR services (a health check and the security checks) work so far; anything else in this README is marked *(planned, S<NN>)* with the step that builds it. To see how far the build has got, run:
 >
 > ```text
 > git grep -n "^status:" -- docs/build/steps
@@ -112,6 +112,8 @@ scripts/py.mjs                 runs a service's Python from the repository root
 scripts/check-architecture.mjs yarn check:arch, with its tests beside it
 scripts/db.mjs                 yarn db:migrate and yarn db:reset, with its tests beside it
 db/schema.sql                  the whole Postgres schema
+services/agent/                the agent service so far: health check and security checks
+services/ocr/                  the OCR service so far: health check and security checks
 docs/architecture.md           the final design
 docs/build/README.md           build rules, step index, implementation choices
 docs/build/contracts.md        ports, environment, APIs, payloads, events
@@ -125,8 +127,8 @@ What the build steps add:
 ```text
 apps/web/            Next.js interface
 apps/api/            Fastify API
-services/agent/      FastAPI + LangGraph agent, ingestion and retrieval
-services/ocr/        FastAPI + LibreOffice + RapidOCR
+services/agent/      the LangGraph agent, ingestion and retrieval, on top of the skeleton
+services/ocr/        LibreOffice + RapidOCR extraction, on top of the skeleton
 evals/               eval documents, cases and runner
 scripts/             the dev runner, still to come
 ```
@@ -150,7 +152,7 @@ Plan on 2.5 to 4 GB of free memory while a document is being OCR'd, plus the mod
 
 ## Setup
 
-> These steps describe the finished project. Today, steps 1 to 3 work, and in step 5 only `yarn doctor` does. Each later command is marked with the step that builds it.
+> These steps describe the finished project. Today, steps 1 to 4 work, and in step 5 only `yarn doctor` and `yarn db:reset` do. Each later command is marked with the step that builds it.
 
 **1. Install the services.** Most need administrator rights. Full instructions are in [S01](docs/build/steps/S01-machine-setup.md) and in the architecture's [Installing the services](docs/architecture.md#installing-the-services).
 
@@ -179,14 +181,14 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 Fill in `.env`. Put the generated value in `INTERNAL_TOKEN`, and add your database passwords and model settings.
 
-**4. Install the dependencies** from the committed lockfiles. The Python lines work from S04 on, when the services and their lockfiles exist *(planned, S04)*:
+**4. Install the dependencies** from the committed lockfiles. The `-dev` files add pytest and ruff, which `yarn test` needs:
 
 ```text
 yarn install --immutable
 py -3.14 -m venv services\agent\.venv
-services\agent\.venv\Scripts\pip install --require-hashes -r services\agent\requirements.txt
+services\agent\.venv\Scripts\pip install --require-hashes -r services\agent\requirements.txt -r services\agent\requirements-dev.txt
 py -3.14 -m venv services\ocr\.venv
-services\ocr\.venv\Scripts\pip install --require-hashes -r services\ocr\requirements.txt
+services\ocr\.venv\Scripts\pip install --require-hashes -r services\ocr\requirements.txt -r services\ocr\requirements-dev.txt
 ```
 
 **5. Check, create the databases, and download the local models.** `yarn doctor` and `yarn db:reset` work today, and the two warm-ups are *(planned, S09 for OCR and S12 for the agent)*:
@@ -213,7 +215,7 @@ yarn dev
 | `yarn dev` *(planned, S06)* | Starts web, API, agent and OCR together. Stopping it, or a crash of any one of them, stops all four. |
 | `yarn db:migrate` | Applies `db/schema.sql` to an empty database |
 | `yarn db:reset [--main\|--test\|--eval\|--all]` | Drops and recreates databases. **Deletes their data.** |
-| `yarn test` *(planned, S04)* | Runs every workspace's tests |
+| `yarn test` | Runs every workspace's tests (today the agent and OCR services) |
 | `yarn typecheck` *(planned, S05)* | Type-checks the TypeScript workspaces |
 | `yarn e2e` *(planned, S06)* | Runs the Playwright end-to-end tests against a full stack that uses the stub model |
 | `yarn evals [--stub] [--layer <name>]` *(planned, S23)* | Runs the eval suite and stores the scores. Needs the OCR service running. |
@@ -260,7 +262,7 @@ TaskMaster talks to models through one OpenAI-compatible client, so switching be
 
 ## Testing and evals
 
-Everything in this section is *(planned, S04 to S24)*; only the `yarn check:arch` tests and the schema tests exist today (`node --test scripts/check-architecture.test.mjs` and `node --env-file=.env --test scripts/db.test.mjs`).
+Everything in this section is *(planned, S05 to S24)*, except what exists today: the `yarn check:arch` tests, the schema tests and the agent and OCR security tests (`node --test scripts/check-architecture.test.mjs`, `node --env-file=.env --test scripts/db.test.mjs`, and `yarn test`).
 
 **Tests** never call a real model or the internet. They use a scripted, OpenAI-compatible stub model on `127.0.0.1:8099` and a separate `taskmaster_test` database.
 

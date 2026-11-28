@@ -1,0 +1,9 @@
+{
+  "name": "@taskmaster/ocr",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "test": "node ../../scripts/py.mjs ocr -m pytest -q services/ocr/tests",
+    "lint": "node ../../scripts/py.mjs ocr -m ruff check services/ocr"
+  }
+}

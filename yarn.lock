@@ -5,6 +5,18 @@ __metadata:
   version: 10
   cacheKey: 10c0
 
+"@taskmaster/agent@workspace:services/agent":
+  version: 0.0.0-use.local
+  resolution: "@taskmaster/agent@workspace:services/agent"
+  languageName: unknown
+  linkType: soft
+
+"@taskmaster/ocr@workspace:services/ocr":
+  version: 0.0.0-use.local
+  resolution: "@taskmaster/ocr@workspace:services/ocr"
+  languageName: unknown
+  linkType: soft
+
 "pg-cloudflare@npm:^1.4.1":
   version: 1.4.1
   resolution: "pg-cloudflare@npm:1.4.1"

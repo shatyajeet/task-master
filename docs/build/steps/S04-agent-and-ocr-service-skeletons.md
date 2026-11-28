@@ -1,9 +1,9 @@
 ---
 step: S04
 title: "Agent and OCR service skeletons"
-status: not-started
-started:
-completed:
+status: done
+started: 2026-11-29
+completed: 2026-11-29
 ---
 
 # S04 · Agent and OCR service skeletons

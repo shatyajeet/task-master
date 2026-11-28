@@ -1,0 +1,9 @@
+{
+  "name": "@taskmaster/agent",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "test": "node ../../scripts/py.mjs agent -m pytest -q services/agent/tests",
+    "lint": "node ../../scripts/py.mjs agent -m ruff check services/agent"
+  }
+}

@@ -1,0 +1,8 @@
+fastapi>=0.165.0,<1
+uvicorn>=0.55.0,<1
+pydantic-settings
+python-multipart
+rapidocr>=3.10.0,<4
+onnxruntime>=1.32.0,<2
+pypdfium2>=5.15.2,<6
+pillow

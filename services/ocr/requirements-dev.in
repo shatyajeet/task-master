@@ -1,0 +1,8 @@
+-c requirements.txt
+pytest
+pytest-asyncio
+ruff
+pip-tools
+python-docx
+python-pptx
+openpyxl
