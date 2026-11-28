@@ -37,9 +37,10 @@ Expected output: `19.x`, `localhost` and `0.8.7`; then `Python 3.14.10` or later
 ## Finish
 
 1. Every **Verify** command above exits 0.
-2. Add the S01 entry to [progress.md](../progress.md).
-3. Set `status: done` and `completed:` at the top of this file.
-4. Commit everything as `S01: Machine setup`.
+2. Update [README.md](../../README.md) as [AGENTS.md](../../AGENTS.md#keeping-readmemd-current) describes, or note in the progress entry why no change was needed.
+3. Add the S01 entry to [progress.md](../progress.md).
+4. Set `status: done` and `completed:` at the top of this file.
+5. Commit everything as `S01: Machine setup`.
 
 ## Blocked
 

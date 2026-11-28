@@ -70,6 +70,7 @@ completed:
   | `A6-render` | Anything under `apps/web` mentions `rehype-raw` or `dangerouslySetInnerHTML`; or `apps/web/next.config.ts` exists but its CSP lacks `img-src 'self' data:` or `frame-src 'none'`. | Rendering model output safely |
   | `A7-test-net` | A test file contains an `http://` or `https://` URL whose host is not `127.0.0.1`, `localhost`, or a name ending in `.example`. | No real model or internet in tests |
   | `A8-arch-commit` | `git status` shows `docs/architecture.md` changed together with any file outside `docs/`. | Architecture changes go in their own `ARCH:` commit |
+| `A9-readme` | In `README.md`: a relative link points to a missing file; a link's `#anchor` matches no heading in its target, using GitHub's heading slugs; the links listed under `## Contents` differ from the `##` headings that follow it, in order; there is more than one `#` heading; or the file is longer than 450 lines. Headings inside code blocks don't count. | The README guidelines in `AGENTS.md` |
 
 - **`scripts/check-architecture.test.mjs`** uses `node:test`. For each rule, it builds one temporary fixture folder that breaks the rule and one that doesn't, and asserts exactly one violation and zero respectively. For `A8`, the fixture is a temporary git repository.
 
@@ -89,9 +90,10 @@ All three checks exit 0. The `yarn.lock` that `yarn install` created is committe
 ## Finish
 
 1. Every **Verify** command above exits 0, and so does `yarn check:arch`.
-2. Add the S02 entry to [progress.md](../progress.md).
-3. Set `status: done` and `completed:` at the top of this file.
-4. Commit everything as `S02: Repository skeleton and doctor`.
+2. Update [README.md](../../README.md) as [AGENTS.md](../../AGENTS.md#keeping-readmemd-current) describes, or note in the progress entry why no change was needed.
+3. Add the S02 entry to [progress.md](../progress.md).
+4. Set `status: done` and `completed:` at the top of this file.
+5. Commit everything as `S02: Repository skeleton and doctor`.
 
 ## Blocked
 
