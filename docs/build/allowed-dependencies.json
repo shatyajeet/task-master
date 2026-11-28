@@ -1,0 +1,28 @@
+{
+  "_comment": "Direct dependencies each manifest may declare. Built from the step files. `yarn check:arch` fails on anything else. Change only with the user's agreement; see AGENTS.md.",
+  "package.json": ["pg", "typescript"],
+  "apps/api/package.json": [
+    "fastify", "@fastify/cors", "@fastify/multipart", "pg",
+    "@types/pg", "@types/node", "typescript", "undici"
+  ],
+  "apps/web/package.json": [
+    "next", "react", "react-dom", "react-markdown", "remark-gfm",
+    "typescript", "@types/react", "@types/react-dom", "@types/node", "@playwright/test"
+  ],
+  "services/agent/package.json": [],
+  "services/ocr/package.json": [],
+  "services/agent/requirements.in": [
+    "fastapi", "uvicorn", "pydantic-settings", "httpx", "psycopg", "pgvector",
+    "langgraph", "langgraph-checkpoint-postgres", "langchain-openai",
+    "fastembed", "onnxruntime", "rapidfuzz"
+  ],
+  "services/agent/requirements-dev.in": ["pytest", "pytest-asyncio", "ruff", "pip-tools"],
+  "services/ocr/requirements.in": [
+    "fastapi", "uvicorn", "pydantic-settings", "python-multipart",
+    "rapidocr", "onnxruntime", "pypdfium2", "pillow"
+  ],
+  "services/ocr/requirements-dev.in": [
+    "pytest", "pytest-asyncio", "ruff", "pip-tools",
+    "python-docx", "python-pptx", "openpyxl"
+  ]
+}
